@@ -12,7 +12,7 @@ import java.util.Objects;
 public abstract class AbstractEntity {
 
     private int id;
-
+// add note for project
     private String name;
 
     public int getId() {
