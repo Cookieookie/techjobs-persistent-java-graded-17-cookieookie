@@ -15,7 +15,7 @@ public class Employer extends AbstractEntity {
 
     @OneToMany
     @JoinColumn(name="employer_id")
-    private final List<Job> jobs = new ArrayList<>();
+    private List<Job> jobs = new ArrayList<>(); //removed final
 
     @NotNull
     @Size(min = 3, max = 50, message = "Location must be between 3 and 50 characters.")
@@ -33,5 +33,12 @@ public class Employer extends AbstractEntity {
         this.location = location;
     }
 
+//added getters and setters for jobs
+    public List<Job> getJobs() {
+        return jobs;
+    }
 
+    public void setJobs(List<Job> jobs) {
+        this.jobs = jobs;
+    }
 }
