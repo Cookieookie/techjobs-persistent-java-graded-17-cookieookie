@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
+//fixed syntax errors from copying from EmployerController. Now passes TestTaskTwo
+
 @Controller
 @RequestMapping("skills")
 public class SkillController {
