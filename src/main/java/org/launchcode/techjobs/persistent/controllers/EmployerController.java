@@ -19,7 +19,7 @@ public class EmployerController {
     private EmployerRepository employerRepository;
 
     @RequestMapping("/")
-    public String displayAllEmployers(Model model) {
+    public String index(Model model) {
         model.addAttribute("title", "All Employers");
         model.addAttribute("employers", employerRepository.findAll());
 

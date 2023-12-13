@@ -43,8 +43,8 @@ public class TestTaskTwo extends AbstractTest {
     // --- BEGIN AbstractEntity TESTS --- //
 
     /*
-    * Verifies that AbstractEntity has @MappedSuperclass
-    * */
+     * Verifies that AbstractEntity has @MappedSuperclass
+     * */
     @Test
     public void testAbstractEntityHasCorrectAnnotation () throws ClassNotFoundException {
         Class abstractEntityClass = getClassByName("models.AbstractEntity");
@@ -53,8 +53,8 @@ public class TestTaskTwo extends AbstractTest {
     }
 
     /*
-    * Verifies that AbstractEntity.id has correct annotations
-    * */
+     * Verifies that AbstractEntity.id has correct annotations
+     * */
     @Test
     public void testIdFieldHasCorrectAnnotations () throws ClassNotFoundException {
         Class abstractEntityClass = getClassByName("models.AbstractEntity");
@@ -73,8 +73,8 @@ public class TestTaskTwo extends AbstractTest {
     }
 
     /*
-    * Verifies that AbstractEntity.name has correct annotations
-    * */
+     * Verifies that AbstractEntity.name has correct annotations
+     * */
     @Test
     public void testNameFieldHasCorrectAnnotations () throws ClassNotFoundException {
         Class abstractEntityClass = getClassByName("models.AbstractEntity");
@@ -102,8 +102,8 @@ public class TestTaskTwo extends AbstractTest {
     // --- BEGIN Employer TESTS --- //
 
     /*
-    * Verifies that Employer has a location field
-    * */
+     * Verifies that Employer has a location field
+     * */
     @Test
     public void testEmployerHasLocationField () throws ClassNotFoundException {
         Class employerClass = getClassByName("models.Employer");
@@ -119,8 +119,8 @@ public class TestTaskTwo extends AbstractTest {
     }
 
     /*
-    * Verifies that Employer.location has public accessors
-    * */
+     * Verifies that Employer.location has public accessors
+     * */
     @Test
     public void testLocationFieldHasPublicAccessors () throws ClassNotFoundException, NoSuchFieldException {
         Class employerClass = getClassByName("models.Employer");
@@ -147,8 +147,8 @@ public class TestTaskTwo extends AbstractTest {
     }
 
     /*
-    * Verifies that Employer.location has correct validation annotations
-    * */
+     * Verifies that Employer.location has correct validation annotations
+     * */
     @Test
     public void testLocationHasCorrectValidationAnnotations () throws ClassNotFoundException, NoSuchFieldException {
         Class employerClass = getClassByName("models.Employer");
@@ -167,8 +167,8 @@ public class TestTaskTwo extends AbstractTest {
     }
 
     /*
-    * Verifies that Employer has the persistence annotation
-    * */
+     * Verifies that Employer has the persistence annotation
+     * */
     @Test
     public void testEmployerHasPersistenceAnnotation () throws ClassNotFoundException {
         Class employerClass = getClassByName("models.Employer");
@@ -177,8 +177,8 @@ public class TestTaskTwo extends AbstractTest {
     }
 
     /*
-    * Verifies that Employer has a no-arg/default constructor
-    * */
+     * Verifies that Employer has a no-arg/default constructor
+     * */
     @Test
     public void testEmployerHasDefaultConstructor () throws ClassNotFoundException {
         Class employerClass = getClassByName("models.Employer");
@@ -266,8 +266,8 @@ public class TestTaskTwo extends AbstractTest {
     // --- BEGIN DATA LAYER TESTS --- //
 
     /*
-    * Verifies that EmployerRepository exists
-    * */
+     * Verifies that EmployerRepository exists
+     * */
     @Test
     public void testEmployerRepositoryExists () {
         try {
@@ -332,8 +332,8 @@ public class TestTaskTwo extends AbstractTest {
     // --- BEGIN CONTROLLER TESTS --- //
 
     /*
-    * Verifies that the employerRepository field is correctly defined
-    * */
+     * Verifies that the employerRepository field is correctly defined
+     * */
     @Test
     public void testEmployerRepositoryDefinition () throws ClassNotFoundException {
         Class employerController = getClassByName("controllers.EmployerController");
@@ -349,13 +349,52 @@ public class TestTaskTwo extends AbstractTest {
         assertNotNull(employerRepositoryField.getAnnotation(Autowired.class), "employerRepository must have the @Autowired annotation");
     }
 
-//    /*
-//    * Verifies that EmployerController.index is properly defined
-//    * */
+    /*
+     * Verifies that EmployerController.index is properly defined
+     * */
+    @Test
+    public void testEmployerControllerIndexMethodDefinition (@Mocked EmployerRepository employerRepository) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+        Class employerControllerClass = getClassByName("controllers.EmployerController");
+        Method indexMethod = null;
 
-//    /*
-//    * Verify that processAddEmployerForm saves a new employer to the database
-//    * */
+        // Verify that the index method exists
+        try {
+            indexMethod = employerControllerClass.getMethod("index", Model.class);
+        } catch (NoSuchMethodException e) {
+            fail("EmployerController must have an index method that takes a parameter of type Model");
+        }
+
+        Annotation annotation = indexMethod.getDeclaredAnnotation(RequestMapping.class);
+
+        // Verify that index has a routing annotation. We need to accommodate
+        // both @RequestMapping and @GetMapping.
+        if (annotation == null) {
+            annotation = indexMethod.getDeclaredAnnotation(GetMapping.class);
+        }
+
+        assertNotNull(annotation, "index method must have a routing annotation");
+
+        Method annotationValueMethod = annotation.getClass().getMethod("value");
+        String[] values = ((String[]) annotationValueMethod.invoke(annotation));
+        assertEquals(1, values.length, "The routing annotation for index must have a value");
+        assertEquals("/", values[0], "The value parameter for the routing annotation must be the empty string");
+
+        // Verify that index calls employerRepository.findAll()
+        new Expectations() {{
+            employerRepository.findAll();
+        }};
+
+        Model model = new ExtendedModelMap();
+        EmployerController employerController = new EmployerController();
+        Field employerRepositoryField = employerControllerClass.getDeclaredField("employerRepository");
+        employerRepositoryField.setAccessible(true);
+        employerRepositoryField.set(employerController, employerRepository);
+        indexMethod.invoke(employerController, model);
+    }
+
+    /*
+     * Verify that processAddEmployerForm saves a new employer to the database
+     * */
     @Test
     public void testNewEmployerIsSaved (@Mocked EmployerRepository employerRepository, @Mocked Errors errors) throws ClassNotFoundException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException {
         Class employerControllerClass = getClassByName("controllers.EmployerController");
@@ -379,15 +418,15 @@ public class TestTaskTwo extends AbstractTest {
     }
 
     /*
-    * Verifies that displayViewEmployer calls findById to retrieve an employer object
-    * */
+     * Verifies that displayViewEmployer calls findById to retrieve an employer object
+     * */
     @Test
     public void testDisplayViewEmployerCallsFindById (@Mocked EmployerRepository employerRepository) throws ClassNotFoundException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException {
         Class employerControllerClass = getClassByName("controllers.EmployerController");
         Method displayViewEmployerMethod = employerControllerClass.getMethod("displayViewEmployer", Model.class, int.class);
 
         new Expectations() {{
-           employerRepository.findById(1);
+            employerRepository.findById(1);
         }};
 
         Model model = new ExtendedModelMap();
@@ -416,9 +455,9 @@ public class TestTaskTwo extends AbstractTest {
         assertNotNull(skillRepositoryField.getAnnotation(Autowired.class), "skillRepository must have the @Autowired annotation");
     }
 
-//    /*
-//     * Verifies that SkillController.index is properly defined
-//     * */
+    /*
+     * Verifies that SkillController.index is properly defined
+     * */
     @Test
     public void testSkillControllerIndexMethodDefinition (@Mocked SkillRepository skillRepository) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
         Class skillControllerClass = getClassByName("controllers.SkillController");
@@ -506,8 +545,8 @@ public class TestTaskTwo extends AbstractTest {
     // --- END CONTROLLER TESTS --- //
 
     /*
-    * Tests SQL query for task 2
-    * */
+     * Tests SQL query for task 2
+     * */
     @Test
     public void testSqlQuery() throws IOException {
         String queryFileContents = getFileContents("queries.sql");
